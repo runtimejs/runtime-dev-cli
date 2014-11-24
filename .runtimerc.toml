@@ -1,0 +1,5 @@
+# Default .runtimerc.toml config file
+# Format: https://github.com/toml-lang/toml
+
+RuntimePath = "~/runtime"
+CrossCompilerPath = "~/opt/cross"
