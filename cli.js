@@ -4,7 +4,6 @@ require('colors');
 var shell = require('shelljs');
 var argv = require('minimist')(process.argv.slice(2));
 var async = require('async');
-var runtime = require('./index.js');
 var pathUtils = require('path');
 var error = require('./error');
 var config = require('./config');
@@ -40,6 +39,9 @@ function usage() {
   shell.echo('  Options:');
   shell.echo('  --docker   Use docker image to build initrd. The image should be prepared');
   shell.echo('             before using this command');
+  shell.echo('');
+  shell.echo('$ runtime initconfig');
+  shell.echo('  Create default config file in user home directory (~/.runtimerc.toml).');
   shell.echo('');
   process.exit(1);
 }
