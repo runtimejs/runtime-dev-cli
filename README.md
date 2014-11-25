@@ -9,12 +9,26 @@ runtime initconfig
 
 Edit config file (runtime.js, cross compiler directory)
 ```bash
-vim ~/.runtimerc.toml
+runtime editconfig  # the same as "vim ~/.runtimerc.toml"
 ```
 
 ```
-RuntimePath = "~/runtime"
-CrossCompilerPath = "~/opt/cross"
+# Runtime.js directory path
+RuntimePath = "${HOME}/runtime"
+
+# Cross compiler root path
+CrossCompilerPath = "${HOME}/opt/cross"
+```
+
+#### COMPLETION
+
+```bash
+
+# bash
+runtime completion >> ~/.bashrc
+
+# zsh
+runtime completion >> ~/.zshrc
 ```
 
 #### USAGE

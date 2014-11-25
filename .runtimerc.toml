@@ -2,7 +2,7 @@
 # Format: https://github.com/toml-lang/toml
 
 # Runtime.js directory path
-RuntimePath = "~/runtime"
+RuntimePath = "${HOME}/runtime"
 
 # Cross compiler root path
-CrossCompilerPath = "~/opt/cross"
+CrossCompilerPath = "${HOME}/opt/cross"

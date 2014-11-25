@@ -11,6 +11,21 @@ var shellexec = require('./shellexec');
 var exec = require('./exec');
 var resolvePath = require('./path').resolvePath;
 var addPathEnv = require('./path').addPathEnv;
+var tabtab = require('tabtab');
+
+if(process.argv.slice(2)[0] === 'completion') {
+  return tabtab.complete('runtime', function(err, data) {
+    if(err || !data) return;
+
+    tabtab.log([
+      'start',
+      'build',
+      'initrd',
+      'initconfig',
+      'editconfig',
+    ], data);
+  });
+}
 
 function usage() {
   shell.echo('USAGE: runtime [command]');
