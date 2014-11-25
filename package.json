@@ -23,7 +23,6 @@
     "colors": "^1.0.3",
     "minimist": "^1.1.0",
     "shelljs": "^0.3.0",
-    "tilde-expansion": "0.0.0",
     "toml": "^2.0.6"
   }
 }
