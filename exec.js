@@ -1,29 +1,19 @@
 require('colors');
-var shell = require('shelljs');
-var running = [];
+var child_process = require('child_process');
 
-process.on('SIGINT', function() {
-  running.forEach(function(p) {
-    p.kill('SIGINT');
+function exec(cmd, args, cb) {
+  var p = child_process.spawn(cmd, args, {
+    stdio: 'inherit',
+    customFds: [process.stdin, process.stdout, process.stderr]
   });
 
-  shell.echo(' --- interrupted --- '.yellow);
-  process.exit(0);
-});
-
-function exec(cmd, cb) {
-  var p = shell.exec(cmd, { async: true }, function(code, output) {
-    var index = running.indexOf(p);
-    if (index > -1) {
-      running.splice(index);
-    }
-
+  process.stdin.setRawMode(true);
+  p.on('exit', function(code) {
+    process.stdin.setRawMode(false);
     if ('function' === typeof cb) {
-      return cb(code, output);
+      return cb(code);
     }
   });
-
-  running.push(p);
 }
 
 module.exports = exec;

@@ -7,6 +7,7 @@ var async = require('async');
 var pathUtils = require('path');
 var error = require('./error');
 var config = require('./config');
+var shellexec = require('./shellexec');
 var exec = require('./exec');
 var tilde = require('tilde-expansion');
 
@@ -43,6 +44,9 @@ function usage() {
   shell.echo('$ runtime initconfig');
   shell.echo('  Create default config file in user home directory (~/.runtimerc.toml).');
   shell.echo('');
+  shell.echo('$ runtime editconfig');
+  shell.echo('  Open config file in default editor.');
+  shell.echo('');
   process.exit(1);
 }
 
@@ -55,6 +59,10 @@ if ('initconfig' === command) {
   return config.init(argv);
 }
 
+if ('editconfig' === command) {
+  return config.edit(argv);
+}
+
 var conf = config.parse();
 var dockerPrefix = 'docker run --rm -w /mnt -v $(pwd):/mnt:rw runtimejs ';
 
@@ -65,7 +73,7 @@ function build(cb) {
   }
 
   tilde(conf.RuntimePath, function(runtimePath) {
-    exec('cd ' + runtimePath + ' && ' + cmd, function(code, output) {
+    shellexec('cd ' + runtimePath + ' && ' + cmd, function(code, output) {
       if (0 !== code) {
         return cb(new Error('build failed'));
       }
@@ -83,7 +91,7 @@ function initrd(cb) {
   }
 
   tilde(conf.RuntimePath, function(runtimePath) {
-    exec('cd ' + runtimePath + ' && ' + cmd, function(code, output) {
+    shellexec('cd ' + runtimePath + ' && ' + cmd, function(code, output) {
       if (0 !== code) {
         return cb(new Error('initrd failed'));
       }
@@ -135,7 +143,7 @@ function start(cb) {
     }
 
     shell.echo(' --- starting qemu --- '.green);
-    exec(qemu + ' ' + a.join(' '), cb);
+    exec(qemu, a.join(' ').split(' '), cb);
   });
 }
 

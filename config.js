@@ -3,6 +3,7 @@ var fs = require('fs');
 var shell = require('shelljs');
 var pathUtils = require('path');
 var error = require('./error');
+var exec = require('./exec');
 
 var name = '.runtimerc.toml';
 var configPath = pathUtils.resolve(getUserHome(), name);
@@ -38,6 +39,14 @@ module.exports = {
     shell.cp('-f', pathUtils.resolve(__dirname, name), configPath);
     shell.echo('created "' + configPath + '" config file');
     shell.exit(0);
+  },
+  edit: function(argv) {
+    if (!exists()) {
+      return error('error: config file doesn\'t exist, use "runtime initconfig" to create');
+    }
+
+    var editor = process.env.EDITOR || 'vi';
+    exec(editor, [configPath]);
   }
 };
 
