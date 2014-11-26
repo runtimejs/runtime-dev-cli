@@ -85,6 +85,7 @@ var runtimePath = resolvePath(conf.RuntimePath);
 var crossCompilerPath = resolvePath(conf.CrossCompilerPath);
 
 function build(cb) {
+  cb = cb || function() {};
   addPathEnv(pathUtils.resolve(crossCompilerPath, 'bin'));
 
   var cmd = 'scons';
@@ -103,6 +104,7 @@ function build(cb) {
 }
 
 function initrd(cb) {
+  cb = cb || function() {};
   var cmd = './mkinitrd -c disk/boot/initrd initrd';
   if (argv.docker) {
     cmd = dockerPrefix + cmd;
@@ -119,6 +121,7 @@ function initrd(cb) {
 }
 
 function start(cb) {
+  cb = cb || function() {};
   var qemu = 'qemu-system-x86_64';
   if (!shell.which(qemu)) {
     return error('error: qemu is not installed (not found qemu-system-x86_64)');

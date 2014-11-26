@@ -13,7 +13,6 @@ module.exports = {
     if (paths.indexOf(addPath) > -1) {
       return;
     }
-    console.log(paths);
 
     paths.unshift(addPath);
     process.env.PATH = paths.join(pathUtils.delimiter);
