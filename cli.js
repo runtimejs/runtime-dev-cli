@@ -12,6 +12,8 @@ var exec = require('./exec');
 var resolvePath = require('./path').resolvePath;
 var addPathEnv = require('./path').addPathEnv;
 var tabtab = require('tabtab');
+var fs = require('fs');
+var moment = require('moment');
 
 if(process.argv.slice(2)[0] === 'completion') {
   return tabtab.complete('runtime', function(err, data) {
@@ -131,12 +133,31 @@ function start(cb) {
     return error('error: could not locate runtime directory at "' + runtimePath + '", check config file');
   }
 
+  var kernelPath = pathUtils.resolve(runtimePath, 'disk/boot/runtime');
+  var initrdPath = pathUtils.resolve(runtimePath, 'disk/boot/initrd');
+  var kernelStats, initrdStats;
+
+  try {
+    kernelStats = fs.statSync(kernelPath);
+  } catch (e) {
+    return error('error: no kernel found at "' + kernelPath + '"');
+  }
+
+  try {
+    initrdStats = fs.statSync(initrdPath);
+  } catch (e) {
+    return error('error: no initrd found at "' + initrdPath + '"');
+  }
+
+  var kernelTime = kernelStats.mtime;
+  var initrdTime = initrdStats.mtime;
+
   var a = [
     '-m 512',
     '-smp 1',
     '-s',
-    '-kernel ' + pathUtils.resolve(runtimePath, 'disk/boot/runtime'),
-    '-initrd ' + pathUtils.resolve(runtimePath, 'disk/boot/initrd'),
+    '-kernel ' + kernelPath,
+    '-initrd ' + initrdPath,
   ];
 
   if (argv.net) {
@@ -160,7 +181,13 @@ function start(cb) {
     a.push('-serial stdio');
   }
 
-  shell.echo(' --- starting qemu --- '.green);
+  if (kernelTime && initrdTime) {
+    shell.echo(' --- starting qemu (kernel from '.green +
+      moment(kernelTime).fromNow().white + ', initrd from '.green +
+      moment(initrdTime).fromNow().white + ') --- '.green);
+  } else {
+    shell.echo(' --- starting qemu --- '.green);
+  }
   if (argv.curses) {
     exec(qemu, a.join(' ').split(' '), cb);
   } else {
