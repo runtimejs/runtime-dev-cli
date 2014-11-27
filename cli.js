@@ -162,7 +162,19 @@ function start(cb) {
 
   if (argv.net) {
     a.push('-net nic,model=virtio,macaddr=1a:46:0b:ca:bc:7c');
-    a.push('-net user,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=udp::9000-:9000,hostfwd=tcp::9000-:9000');
+
+    switch (String(argv.net)) {
+    case 'tap':
+    case 'bridge':
+      a.push('-net bridge');
+      break;
+    case 'true':
+    case 'user':
+      a.push('-net user,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=udp::9000-:9000,hostfwd=tcp::9000-:9000');
+      break;
+    default:
+      return error('error: unknown network type (supported tap/bridge/user)');
+    }
   }
 
   if (argv.netdump) {
