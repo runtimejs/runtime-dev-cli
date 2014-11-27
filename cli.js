@@ -14,6 +14,7 @@ var addPathEnv = require('./path').addPathEnv;
 var tabtab = require('tabtab');
 var fs = require('fs');
 var moment = require('moment');
+var logfile = require('./logfile');
 
 if(process.argv.slice(2)[0] === 'completion') {
   return tabtab.complete('runtime', function(err, data) {
@@ -25,6 +26,7 @@ if(process.argv.slice(2)[0] === 'completion') {
       'initrd',
       'initconfig',
       'editconfig',
+      'log',
     ], data);
   });
 }
@@ -65,6 +67,9 @@ function usage() {
   shell.echo('$ runtime editconfig');
   shell.echo('  Open config file in default editor.');
   shell.echo('');
+  shell.echo('$ runtime log');
+  shell.echo('  Open QEMU serial port log written in --curses mode.');
+  shell.echo('');
   process.exit(1);
 }
 
@@ -85,6 +90,16 @@ var conf = config.parse();
 var dockerPrefix = 'docker run --rm -w /mnt -v $(pwd):/mnt:rw runtimejs ';
 var runtimePath = resolvePath(conf.RuntimePath);
 var crossCompilerPath = resolvePath(conf.CrossCompilerPath);
+var logPath = pathUtils.resolve(runtimePath, 'runtime.log');
+var log = logfile(logPath);
+
+if ('log' === command) {
+  if (!log.exists()) {
+    return error('error: no logfile found at "' + logPath + '"');
+  }
+
+  return log.less();
+}
 
 function build(cb) {
   cb = cb || function() {};
@@ -188,7 +203,7 @@ function start(cb) {
 
   if (argv.curses) {
     a.push('-curses');
-    a.push('-serial file:serial.txt');
+    a.push('-serial file:' + logPath);
   } else {
     a.push('-serial stdio');
   }
@@ -200,6 +215,9 @@ function start(cb) {
   } else {
     shell.echo(' --- starting qemu --- '.green);
   }
+
+  log.rm();
+
   if (argv.curses) {
     exec(qemu, a.join(' ').split(' '), cb);
   } else {
