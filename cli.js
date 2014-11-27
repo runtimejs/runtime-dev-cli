@@ -280,9 +280,9 @@ function start(cb) {
         shell.echo('Downloading '.yellow + kernelUrl.white + '...');
         try {
         request(kernelUrl)
-          .on('response', function(r) { callback(null, r) })
           .on('error', callback)
-          .pipe(fs.createWriteStream(kernelPath));
+          .pipe(fs.createWriteStream(kernelPath))
+          .on('finish', function(r) { callback(null, r) })
         } catch (e) {
           return error('error: invalid url')
         }
@@ -291,9 +291,9 @@ function start(cb) {
         try {
         shell.echo('Downloading '.yellow + initrdUrl.white + '...');
         request(initrdUrl)
-          .on('response', function(r) { callback(null, r) })
           .on('error', callback)
-          .pipe(fs.createWriteStream(initrdPath));
+          .pipe(fs.createWriteStream(initrdPath))
+          .on('finish', function(r) { callback(null, r) })
         } catch (e) {
           return error('error: invalid url')
         }
