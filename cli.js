@@ -15,24 +15,54 @@ var tabtab = require('tabtab');
 var fs = require('fs');
 var moment = require('moment');
 var logfile = require('./logfile');
+var netdumpfile = require('./netdumpfile');
 var serveHttp = require('./serve');
 var url = require('url');
 var request = require('request');
 
+var matchCommands = [
+  'start',
+  'build',
+  'initrd',
+  'initconfig',
+  'editconfig',
+  'log',
+  'serve',
+  'netdump',
+];
+
+var matchOptions = [
+  'build',
+  'initrd',
+  'net',
+  'netdump',
+  'kvm',
+  'curses',
+  'host',
+  'port',
+  'docker',
+  'verbose',
+  'dry',
+  'append',
+];
+
 if(process.argv.slice(2)[0] === 'completion') {
   return tabtab.complete('runtime', function(err, data) {
     if(err || !data) return;
-
-    tabtab.log([
-      'start',
-      'build',
-      'initrd',
-      'initconfig',
-      'editconfig',
-      'log',
-      'serve',
-    ], data);
+    tabtab.log(matchCommands, data);
   });
+}
+
+function checkOptions() {
+  for (o in argv) {
+    if (!Object.prototype.hasOwnProperty.call(argv, o)) {
+      continue;
+    }
+
+    if (o !== '_' && (-1 === matchOptions.indexOf(o))) {
+      return error('error: unrecognized option --' + o);
+    }
+  }
 }
 
 function usage() {
@@ -46,12 +76,15 @@ function usage() {
   shell.echo('  Options:');
   shell.echo('  --build         Rebuild everything before start (the same as "runtime build")');
   shell.echo('  --initrd        Rebuild initrd image before start (the same as "runtime initrd")');
+  shell.echo('  --append=[CMD]  Pass command line to kernel');
   shell.echo('  --net           Enable networking in QEMU');
   shell.echo('  --netdump       Dump all network activity into vm.pcap file');
   shell.echo('  --kvm           Enable KVM');
   shell.echo('  --curses        Use QEMU in text-mode');
   shell.echo('  --host=[HOST]   Load kernel and initrd over network using HTTP');
   shell.echo('  --port=[PORT]   Port to use for HTTP requests (defaults to 8077)');
+  shell.echo('  --verbose       Log evaluated shell commands');
+  shell.echo('  --dry           Do not start QEMU, print command line only');
   shell.echo('');
   shell.echo('$ runtime build');
   shell.echo('  Build everything (kernel and initrd image from source code).');
@@ -59,6 +92,7 @@ function usage() {
   shell.echo('  Options:');
   shell.echo('  --docker        Use docker image to build kernel and initrd. The image should');
   shell.echo('                  be prepared before using this command');
+  shell.echo('  --verbose       Log evaluated shell commands');
   shell.echo('');
   shell.echo('$ runtime initrd');
   shell.echo('  Build initrd image only.');
@@ -66,6 +100,7 @@ function usage() {
   shell.echo('  Options:');
   shell.echo('  --docker        Use docker image to build initrd. The image should be prepared');
   shell.echo('                  before using this command');
+  shell.echo('  --verbose       Log evaluated shell commands');
   shell.echo('');
   shell.echo('$ runtime initconfig');
   shell.echo('  Create default config file in user home directory (~/.runtimerc.toml).');
@@ -75,6 +110,9 @@ function usage() {
   shell.echo('');
   shell.echo('$ runtime log');
   shell.echo('  Open QEMU serial port log written in --curses mode.');
+  shell.echo('');
+  shell.echo('$ runtime netdump');
+  shell.echo('  Open QEMU netdump log written in --netdump mode.');
   shell.echo('');
   shell.echo('$ runtime serve');
   shell.echo('  Serve built kernel and initrd over HTTP. Clients can use CLI to boot');
@@ -87,6 +125,8 @@ function usage() {
   shell.echo('');
   process.exit(1);
 }
+
+checkOptions();
 
 var command = argv._[0];
 if (!command) {
@@ -108,7 +148,10 @@ var crossCompilerPath = resolvePath(conf.CrossCompilerPath);
 var kernelPath = pathUtils.resolve(runtimePath, 'disk/boot/runtime');
 var initrdPath = pathUtils.resolve(runtimePath, 'disk/boot/initrd');
 var logPath = pathUtils.resolve(runtimePath, 'runtime.log');
+var netdumpPath = pathUtils.resolve(runtimePath, 'netdump.pcap');
+var netdumpTextPath = pathUtils.resolve(runtimePath, 'netdump.txt');
 var log = logfile(logPath);
+var netdump = netdumpfile(netdumpPath, netdumpTextPath);
 
 if ('log' === command) {
   if (!log.exists()) {
@@ -118,6 +161,14 @@ if ('log' === command) {
   return log.less();
 }
 
+if ('netdump' === command) {
+  if (!netdump.exists()) {
+    return error('error: no netdump found at "' + netdumpPath + '"');
+  }
+
+  return netdump.less();
+}
+
 function build(cb) {
   cb = cb || function() {};
   addPathEnv(pathUtils.resolve(crossCompilerPath, 'bin'));
@@ -125,6 +176,10 @@ function build(cb) {
   var cmd = 'scons';
   if (argv.docker) {
     cmd = dockerPrefix + cmd;
+  }
+
+  if (argv.verbose) {
+    shell.echo(cmd.white);
   }
 
   shellexec('cd ' + runtimePath + ' && ' + cmd, function(code, output) {
@@ -142,6 +197,10 @@ function initrd(cb) {
   var cmd = './mkinitrd -c disk/boot/initrd initrd';
   if (argv.docker) {
     cmd = dockerPrefix + cmd;
+  }
+
+  if (argv.verbose) {
+    shell.echo(cmd.white);
   }
 
   shellexec('cd ' + runtimePath + ' && ' + cmd, function(code, output) {
@@ -209,7 +268,7 @@ function start(cb) {
     }
 
     if (argv.netdump) {
-      a.push('-net dump,file=vm.pcap');
+      a.push('-net dump,file=' + netdumpPath);
     }
 
     if (argv.kvm) {
@@ -224,6 +283,23 @@ function start(cb) {
       a.push('-serial stdio');
     }
 
+    if (argv.append) {
+      var app = argv.append;
+      if (true === app) {
+        return error('error: expected --append=[VALUE]');
+      }
+
+      a.push('-append "' + argv.append + '"');
+    }
+
+    if (argv.dry || argv.verbose) {
+      shell.echo(String(qemu).white + ' ' + a.join(' ').white);
+    }
+
+    if (argv.dry) {
+      return;
+    }
+
     if (hosted) {
       shell.echo(' --- starting qemu (from '.green + hosted.white + ') --- '.green);
     } else if (kernelTime && initrdTime) {
@@ -235,6 +311,7 @@ function start(cb) {
     }
 
     log.rm();
+    netdump.rm();
 
     if (argv.curses) {
       exec(qemu, a.join(' ').split(' '), cb);
