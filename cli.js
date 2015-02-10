@@ -147,6 +147,7 @@ var runtimePath = resolvePath(conf.RuntimePath);
 var crossCompilerPath = resolvePath(conf.CrossCompilerPath);
 var kernelPath = pathUtils.resolve(runtimePath, 'disk/boot/runtime');
 var initrdPath = pathUtils.resolve(runtimePath, 'disk/boot/initrd');
+var ipxePath = pathUtils.resolve(runtimePath, 'disk/boot/ipxe.txt');
 var logPath = pathUtils.resolve(runtimePath, 'runtime.log');
 var netdumpPath = pathUtils.resolve(runtimePath, 'netdump.pcap');
 var netdumpTextPath = pathUtils.resolve(runtimePath, 'netdump.txt');
@@ -399,7 +400,7 @@ function serve(cb) {
     port = argv.port;
   }
 
-  serveHttp(kernelPath, initrdPath, port);
+  serveHttp(kernelPath, initrdPath, ipxePath, port);
 }
 
 switch (command) {

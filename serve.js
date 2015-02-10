@@ -7,7 +7,7 @@ require('colors');
 
 var defaultPort = 8077;
 
-module.exports = function(kernelPath, initrdPath, port) {
+module.exports = function(kernelPath, initrdPath, ipxePath, port) {
   var port = port || defaultPort;
 
   if (!fs.existsSync(kernelPath)) {
@@ -18,23 +18,35 @@ module.exports = function(kernelPath, initrdPath, port) {
     return error('error: no initrd found at "' + initrdPath + '"');
   }
 
+  if (!fs.existsSync(ipxePath)) {
+    return error('error: no ipxe.txt found at "' + ipxePath + '"');
+  }
+
   var server = http.createServer(function(req, res) {
     var uri = url.parse(req.url).pathname;
 
     var servePath;
+    var contentType;
 
     if ('/runtime' === uri) {
       servePath = kernelPath;
+      contentType = 'application/octet-stream';
     }
 
     if ('/initrd' === uri) {
       servePath = initrdPath;
+      contentType = 'application/octet-stream';
+    }
+
+    if ('/ipxe.txt' === uri) {
+      servePath = ipxePath;
+      contentType = 'text/plain';
     }
 
     if (servePath) {
       var ip = req.connection.remoteAddress;
       shelljs.echo('['.gray + ip.gray + '] '.gray + 'GET '.magenta + uri.yellow + ' \u2192 ' + servePath.green);
-      res.writeHead(200, { 'Content-Type': 'application/octet-stream' });
+      res.writeHead(200, { 'Content-Type': contentType });
       fs.createReadStream(servePath).pipe(res);
       return;
     }
