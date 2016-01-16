@@ -4,12 +4,12 @@
 
 ```bash
 npm install runtime-cli -g
-runtime initconfig
+runtime-dev initconfig
 ```
 
 Edit config file (runtime.js, cross compiler directory)
 ```bash
-runtime editconfig  # the same as "vim ~/.runtimerc.toml"
+runtime-dev editconfig  # the same as "vim ~/.runtimerc.toml"
 ```
 
 ```
@@ -25,10 +25,10 @@ CrossCompilerPath = "${HOME}/opt/cross"
 ```bash
 
 # bash
-runtime completion >> ~/.bashrc
+runtime-dev completion >> ~/.bashrc
 
 # zsh
-runtime completion >> ~/.zshrc
+runtime-dev completion >> ~/.zshrc
 ```
 
 #### USAGE
@@ -36,17 +36,17 @@ runtime completion >> ~/.zshrc
 Example commands
 
 ```bash
-runtime start
-runtime start --build
-runtime start --initrd
-runtime start --net --kvm
-runtime start --net --kvm --curses
-runtime start --build --net --kvm --curses
-runtime start --build --docker --net
-runtime build
-runtime build --docker
-runtime initrd
-runtime initrd --docker
+runtime-dev start
+runtime-dev start --build
+runtime-dev start --initrd
+runtime-dev start --net --kvm
+runtime-dev start --net --kvm --curses
+runtime-dev start --build --net --kvm --curses
+runtime-dev start --build --docker --net
+runtime-dev build
+runtime-dev build --docker
+runtime-dev initrd
+runtime-dev initrd --docker
 ```
 
-Run `runtime` for usage info
+Run `runtime-dev` for usage info

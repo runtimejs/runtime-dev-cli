@@ -66,11 +66,11 @@ function checkOptions() {
 }
 
 function usage() {
-  shell.echo('USAGE: runtime [command]');
+  shell.echo('USAGE: runtime-dev [command]');
   shell.echo('');
   shell.echo('Available commands:');
   shell.echo('');
-  shell.echo('$ runtime start');
+  shell.echo('$ runtime-dev start');
   shell.echo('  Start local runtime.js instance in QEMU.');
   shell.echo('');
   shell.echo('  Options:');
@@ -86,7 +86,7 @@ function usage() {
   shell.echo('  --verbose       Log evaluated shell commands');
   shell.echo('  --dry           Do not start QEMU, print command line only');
   shell.echo('');
-  shell.echo('$ runtime build');
+  shell.echo('$ runtime-dev build');
   shell.echo('  Build everything (kernel and initrd image from source code).');
   shell.echo('');
   shell.echo('  Options:');
@@ -94,7 +94,7 @@ function usage() {
   shell.echo('                  be prepared before using this command');
   shell.echo('  --verbose       Log evaluated shell commands');
   shell.echo('');
-  shell.echo('$ runtime initrd');
+  shell.echo('$ runtime-dev initrd');
   shell.echo('  Build initrd image only.');
   shell.echo('');
   shell.echo('  Options:');
@@ -102,19 +102,19 @@ function usage() {
   shell.echo('                  before using this command');
   shell.echo('  --verbose       Log evaluated shell commands');
   shell.echo('');
-  shell.echo('$ runtime initconfig');
+  shell.echo('$ runtime-dev initconfig');
   shell.echo('  Create default config file in user home directory (~/.runtimerc.toml).');
   shell.echo('');
-  shell.echo('$ runtime editconfig');
+  shell.echo('$ runtime-dev editconfig');
   shell.echo('  Open config file in default editor.');
   shell.echo('');
-  shell.echo('$ runtime log');
+  shell.echo('$ runtime-dev log');
   shell.echo('  Open QEMU serial port log written in --curses mode.');
   shell.echo('');
-  shell.echo('$ runtime netdump');
+  shell.echo('$ runtime-dev netdump');
   shell.echo('  Open QEMU netdump log written in --netdump mode.');
   shell.echo('');
-  shell.echo('$ runtime serve');
+  shell.echo('$ runtime-dev serve');
   shell.echo('  Serve built kernel and initrd over HTTP. Clients can use CLI to boot');
   shell.echo('  over network using "runtime start --host=[HOST]"');
   shell.echo('');
