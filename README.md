@@ -3,7 +3,7 @@
 #### INSTALL
 
 ```bash
-npm install runtime-cli -g
+npm install runtime-dev-cli -g
 runtime-dev initconfig
 ```
 
